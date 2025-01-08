@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Sliding Puzzle Game</title>
+    <style>
+        body {
+            background-color: grey;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            width: 90%;
+            max-width: 500px;
+        }
+        .instruction-text {
+            font-size: 18px;
+            color: rgb(0, 0, 0);
+            text-align: center;
+        }
+        .puzzle-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr); /* Flexible column sizing */
+            gap: 5px;
+            width: 100%; /* Adjusts dynamically */
+            max-width: 400px;
+            aspect-ratio: 1; /* Keeps it square */
+        }
+        .tile {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: calc(1rem + 1vw); /* Adjust font size dynamically */
+            font-weight: bold;
+            border-radius: 5px;
+            color: rgb(78, 2, 255);
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 2px solid #333;
+            cursor: pointer;
+        }
+        .tile:hover {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        .empty {
+            background-color: black;
+            cursor: default;
+        }
+        .side-image {
+            width: 100%;
+            max-width: 200px;
+            aspect-ratio: 1;
+            object-fit: cover;
+            border: 2px solid rgb(0, 0, 0);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="instruction-text"><h1>Complete the image to receive the code</h1></div>
+        <div class="puzzle-container" id="puzzle-container"></div>
+        <img src="Cute.jpg" alt="Side Image" class="side-image" />
+    </div>
+
+    <script>
+        const container = document.getElementById('puzzle-container');
+        const imageSrc = "Cute.jpg"; // Replace with your image path
+        const puzzleSize = 5;
+        let tiles = [];
+        let emptyIndex = 0;
+
+        // Show welcome pop-up before starting
+        window.onload = () => {
+            alert("Welcome to Today's Riddle");
+            initPuzzle();
+        };
+
+        function initPuzzle() {
+            tiles = [...Array(puzzleSize * puzzleSize).keys()];
+            shuffleTiles();
+            renderPuzzle();
+        }
+
+        function shuffleTiles() {
+            tiles = tiles.sort(() => Math.random() - 0.5);
+            emptyIndex = tiles.indexOf(0);
+        }
+
+        function renderPuzzle() {
+            container.innerHTML = '';
+            tiles.forEach((tile, index) => {
+                const tileElement = document.createElement('div');
+                tileElement.classList.add('tile');
+                const row = Math.floor(tile / puzzleSize);
+                const col = tile % puzzleSize;
+
+                if (tile !== 0) {
+                    tileElement.style.backgroundImage = `url(${imageSrc})`;
+                    tileElement.style.backgroundPosition = `-${col * 20}% -${row * 20}%`;
+                    tileElement.style.backgroundSize = "500% 500%"; /* Adjusted for responsiveness */
+                } else {
+                    tileElement.classList.add('empty');
+                }
+
+                if (tile !== 0) {
+                    tileElement.textContent = tile;
+                    tileElement.addEventListener('click', () => moveTile(index));
+                    tileElement.addEventListener('touchstart', () => moveTile(index)); // Add touch support
+                }
+
+                container.appendChild(tileElement);
+            });
+        }
+
+        function moveTile(index) {
+            const validMoves = [
+                emptyIndex - 1, emptyIndex + 1, emptyIndex - puzzleSize, emptyIndex + puzzleSize
+            ];
+
+            if (validMoves.includes(index) && isAdjacent(index, emptyIndex)) {
+                [tiles[index], tiles[emptyIndex]] = [tiles[emptyIndex], tiles[index]];
+                emptyIndex = index;
+                renderPuzzle();
+                checkWin();
+            }
+        }
+
+        function isAdjacent(index1, index2) {
+            const row1 = Math.floor(index1 / puzzleSize);
+            const col1 = index1 % puzzleSize;
+            const row2 = Math.floor(index2 / puzzleSize);
+            const col2 = index2 % puzzleSize;
+
+            return (Math.abs(row1 - row2) === 1 && col1 === col2) || (Math.abs(col1 - col2) === 1 && row1 === row2);
+        }
+
+        function checkWin() {
+            if (tiles.every((tile, index) => tile === index)) {
+                setTimeout(() => {
+                    alert('Congrats on winning here is the code [U2FsdGVkX19eqyaaprSrGkamVXVDz+gXN0yxYQgsy4fSDLBXG1c1t42ZMOFdrtIn] pls proceed to the next step :3!');
+                    initPuzzle();
+                }, 500);
+            }
+        }
+    </script>
+
+</body>
+</html>
